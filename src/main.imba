@@ -34,7 +34,7 @@ let signinInfo = {
 	password: ""
 	userans: ""
 	correctans: 0
-	ansIsCorrect: false
+	enableSignIn: false
 }
 
 # draw random num1 and num2
@@ -44,16 +44,13 @@ let num2 = rndInt(1,100)
 signinInfo.correctans = num1 + num2;
 
 ###
-Used in the addition captcha for checking user's answer 
-against the correctans on keyup event.
+Checks if signin button should be enabled.
 ###
-def checkAns
-	if signinInfo.userans
-		let ansIsCorrect? = 
-			signinInfo.correctans === parseInt(signinInfo.userans, 10)
-		signinInfo.ansIsCorrect = ansIsCorrect?
-	else
-		signinInfo.ansIsCorrect = false
+def updateEnableSignIn
+	let ansIsCorrect? = 
+		signinInfo.correctans === parseInt(signinInfo.userans, 10)
+	signinInfo.enableSignIn = 
+		(signinInfo.password.length >= 7) and (signinInfo.email.includes('@')) and ansIsCorrect?
 
 tag inputbox
 	prop inputType
@@ -102,15 +99,11 @@ tag inputbox
 
 
 tag signin-btn
-	ansCorrect = signinInfo.ansIsCorrect
 	css
 		button@focus
 			ol: none
 	<self>
-		<button 
-			disabled=!(signinInfo.ansIsCorrect)
-			@click=console.log(signinInfo.ansIsCorrect)>
-			"SUBMIT"
+		<button disabled=!(signinInfo.enableSignIn)> "SUBMIT"
 
 
 tag app
@@ -130,19 +123,21 @@ tag app
 			placeholder="Email" 
 			labeltxt="Email" 
 			idval="email"
+			@keyup.debounce(300)=updateEnableSignIn
 			inputType="text">
 
 			<inputbox[mb: 1.5em] bind=signinInfo.password 
 			placeholder="Password" 
 			labeltxt="Password" 
 			idval="password"
+			@keyup.debounce(300)=updateEnableSignIn
 			inputType="password">
 
 			<inputbox[mb: 1.5em] bind=signinInfo.userans
 			placeholder="What is {num1} + {num2}?" 
 			labeltxt="What is {num1} + {num2}?" 
 			idval="userans"
-			@keyup=checkAns
+			@keyup.debounce(300)=updateEnableSignIn
 			inputType="text">
 
 			<signin-btn>
